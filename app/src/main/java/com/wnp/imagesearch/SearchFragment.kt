@@ -1,7 +1,7 @@
 package com.wnp.imagesearch
 
 import android.app.Activity
-import android.net.Uri
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -10,30 +10,21 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.wnp.imagesearch.list.Image
-import com.wnp.imagesearch.list.ImagesListAdapter
-import com.wnp.imagesearch.network.ImagesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import okhttp3.Dispatcher
 import okhttp3.HttpUrl
-import okhttp3.OkHttpClient
-import okhttp3.ResponseBody
 import org.jsoup.Jsoup
-import retrofit2.Call
 import java.io.IOException
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory;
-import retrofit2.http.GET
 
 class SearchFragment : Fragment() {
     private var searchView: SearchView? = null
     private val TAG = "SearchFragment"
-    private val URL = "https://www.google.com/search?tbm=isch&q="
     private val imagesList = mutableListOf<Image>()
     private lateinit var listAdapter: ImagesListAdapter
     private lateinit var recyclerView: RecyclerView
+    private var searchQuery: String = ""
+    private var page = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,9 +55,12 @@ class SearchFragment : Fragment() {
             }
 
             override fun onQueryTextSubmit(query: String?): Boolean {
-                GlobalScope.launch {
-                    if (query != null && query.isNotEmpty())
-                        getImages(query)
+                if (query != null && query.isNotEmpty()) {
+                    imagesList.clear()
+                    searchQuery = query
+                    GlobalScope.launch {
+                        getImages()
+                    }
                 }
                 return when (query != null && query.isNotEmpty()) {
                     true -> false
@@ -79,10 +73,10 @@ class SearchFragment : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
-    private fun getImages(searchQuery: String) {
+    private fun getImages() {
         try {
-            val api = ImagesApi().getApi()
-            val body = api.requestImages(searchQuery).execute().body()?.string()
+            val api = RepoApp.from(context as Context).getApi()
+            val body = api.requestImages(searchQuery, page).execute().body()?.string()
             val htmlDoc = Jsoup.parse(body)
             val table = htmlDoc.select("table")[4]
             val rows = table.select("tr")
@@ -94,21 +88,46 @@ class SearchFragment : Fragment() {
                     val siteUrl = HttpUrl
                         .parse("https://google.com" + item.select("a").attr("href"))
                         ?.queryParameter("q").toString()
-                    val imgUrl = "https" + item.select("img").attr("src").substring(4)
+                    var imgUrl = item.select("img").attr("src")
+                    if(imgUrl.length > 10) {
+                        if(imgUrl[4] != 's')
+                            imgUrl = "https" + imgUrl.substring(4)
+                    } else
+                        Log.d(TAG, "wrong url")
                     val descr = item.select("font").text()
-//                    Log.d(TAG, imgUrl)
-//                    Log.d(TAG, siteUrl)
-//                    Log.d(TAG, descr)
-                    //Log.d(TAG, imgUrl)
                     imagesList.add(Image(imgUrl, descr, siteUrl))
                 }
-                GlobalScope.launch(Dispatchers.Main) {
-                    listAdapter.setData(imagesList)
-                }
+            }
+            page += 20
+            GlobalScope.launch(Dispatchers.Main) {
+                listAdapter.notifyDataSetChanged()
             }
         } catch (e: IOException) {
             e.printStackTrace()
         }
     }
 
+    inner class ImagesListAdapter : RecyclerView.Adapter<ImagesListViewHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImagesListViewHolder {
+            val view = LayoutInflater
+                .from(parent.context)
+                .inflate(R.layout.search_list_item, parent, false)
+
+            val holder = ImagesListViewHolder(view)
+            holder.itemView.setOnClickListener {
+            }
+            return holder
+        }
+
+        override fun onBindViewHolder(holder: ImagesListViewHolder, position: Int) {
+            holder.bind(imagesList[position])
+            if(position == imagesList.size/2) {
+                GlobalScope.launch {
+                    getImages()
+                }
+            }
+        }
+
+        override fun getItemCount(): Int = imagesList.size
+    }
 }

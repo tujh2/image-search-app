@@ -8,19 +8,18 @@
         android:layout_height="match_parent">
         <ImageView
             android:id="@+id/seatch_item_image"
-            android:layout_width="148dp"
-            android:layout_height="148dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:contentDescription="@string/image" />
 
         <TextView
             android:id="@+id/search_item_link"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/seatch_item_image" />
+            android:layout_below="@id/seatch_item_image" />
 
         <TextView
             android:id="@+id/search_item_description"
-            android:layout_toEndOf="@id/seatch_item_image"
             android:layout_below="@id/search_item_link"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />

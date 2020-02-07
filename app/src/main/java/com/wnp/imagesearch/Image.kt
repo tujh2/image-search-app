@@ -1,4 +1,4 @@
-package com.wnp.imagesearch.list
+package com.wnp.imagesearch
 
 import android.net.Uri
 
