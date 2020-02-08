@@ -3,7 +3,8 @@ package com.wnp.imagesearch
 import android.net.Uri
 
 class Image(
-    val imageURL: String,
+    val imageUrl: String,
     val description: String,
-    val siteURl: String
+    val siteUrl: String,
+    val thumbnailUrl: String
 )

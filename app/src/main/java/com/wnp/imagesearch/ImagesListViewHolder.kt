@@ -6,6 +6,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.signature.ObjectKey
 
 class ImagesListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val TAG = "Image View Holde"
@@ -15,10 +18,14 @@ class ImagesListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     fun bind(image: Image) {
         //Log.d(TAG, image.imageURL)
+        val requestOptions = RequestOptions()
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
         Glide.with(itemView.context)
-            .load(image.imageURL)
+            .load(image.imageUrl)
+            .apply(requestOptions)
+            .thumbnail(Glide.with(imageView.context).load(image.thumbnailUrl))
             .into(imageView)
-        this.siteUrl.text = image.siteURl
+        this.siteUrl.text = image.siteUrl
         this.descr.text = image.description
     }
 

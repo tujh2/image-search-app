@@ -88,7 +88,8 @@ class SearchFragment : Fragment() {
                 val imgUrl = jsonImage.getString("ou")
                 val descr = jsonImage.getString("pt")
                 val siteUrl = jsonImage.getString("ru")
-                imagesList.add(Image(imgUrl, descr, siteUrl))
+                val thumbnailUrl = jsonImage.getString("tu")
+                imagesList.add(Image(imgUrl, descr, siteUrl, thumbnailUrl))
             }
             page += 100
             GlobalScope.launch(Dispatchers.Main) {
