@@ -2,6 +2,7 @@ package com.wnp.imagesearch
 
 import android.app.Application
 import android.content.Context
+import android.provider.MediaStore
 import com.wnp.imagesearch.network.ImagesApi
 
 open class RepoApp : Application() {
@@ -11,6 +12,7 @@ open class RepoApp : Application() {
         fun from(context: Context): RepoApp {
             return context.applicationContext as RepoApp
         }
+
     }
 
     override fun onCreate() {

@@ -10,12 +10,9 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.Gson
-import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import okhttp3.HttpUrl
 import org.json.JSONObject
 import org.jsoup.Jsoup
 import java.io.IOException
@@ -23,11 +20,16 @@ import java.io.IOException
 class SearchFragment : Fragment() {
     private var searchView: SearchView? = null
     private val TAG = "SearchFragment"
-    private val imagesList = mutableListOf<Image>()
     private lateinit var listAdapter: ImagesListAdapter
     private lateinit var recyclerView: RecyclerView
     private var searchQuery: String = ""
-    private var page = 0
+    private var page = -1
+    private val imagesList = mutableListOf<Image>()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        retainInstance = true
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,18 +42,19 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
+        activity?.actionBar?.setDisplayShowTitleEnabled(false)
         listAdapter = ImagesListAdapter()
         recyclerView = view.findViewById(R.id.images_list_main)
         recyclerView.layoutManager = LinearLayoutManager(this.context)
         recyclerView.adapter = listAdapter
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.search_menu, menu)
         searchView = menu.findItem(R.id.search_field)?.actionView as SearchView
         searchView?.setIconifiedByDefault(false)
-        searchView?.requestFocus()
+        searchView?.maxWidth = Int.MAX_VALUE
         searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
                 return true
@@ -72,9 +75,12 @@ class SearchFragment : Fragment() {
                 }
             }
         })
-        val imm = context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
-        super.onCreateOptionsMenu(menu, inflater)
+        if (page == -1) {
+            searchView?.requestFocus()
+            val imm = context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
+            page = 0
+        }
     }
 
     private fun getImages() {
@@ -89,9 +95,11 @@ class SearchFragment : Fragment() {
                 val descr = jsonImage.getString("pt")
                 val siteUrl = jsonImage.getString("ru")
                 val thumbnailUrl = jsonImage.getString("tu")
-                imagesList.add(Image(imgUrl, descr, siteUrl, thumbnailUrl))
+                val width = jsonImage.getInt("ow")
+                val height = jsonImage.getInt("oh")
+                imagesList.add(Image(imgUrl, descr, siteUrl, thumbnailUrl, width, height))
             }
-            page += 100
+            page += jsonImages.size
             GlobalScope.launch(Dispatchers.Main) {
                 listAdapter.notifyDataSetChanged()
             }
@@ -108,6 +116,7 @@ class SearchFragment : Fragment() {
 
             val holder = ImagesListViewHolder(view)
             holder.itemView.setOnClickListener {
+
             }
             return holder
         }

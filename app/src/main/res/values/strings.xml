@@ -3,4 +3,6 @@
     <string name="image_search">Image Search</string>
     <string name="search_field">Search field</string>
     <string name="image">Image</string>
+    <string name="url">URL:</string>
+    <string name="description">Description</string>
 </resources>
