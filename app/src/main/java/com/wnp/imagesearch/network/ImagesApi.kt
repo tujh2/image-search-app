@@ -27,7 +27,7 @@ class ImagesApi() {
     }
 
     interface GetImages {
-        @GET("/search?um=1&hl=en&safe=active&nfpr=1&tbm=isch")
+        @GET("/search?tbm=isch&async=_fmt:pc&asearch=ichunk")
         fun requestImages(@Query("q") query: String, @Query("start") page: Int): Call<ResponseBody>
     }
 }

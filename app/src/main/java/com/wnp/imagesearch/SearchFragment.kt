@@ -10,10 +10,13 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
+import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import okhttp3.HttpUrl
+import org.json.JSONObject
 import org.jsoup.Jsoup
 import java.io.IOException
 
@@ -55,6 +58,7 @@ class SearchFragment : Fragment() {
             }
 
             override fun onQueryTextSubmit(query: String?): Boolean {
+                page = 0
                 if (query != null && query.isNotEmpty()) {
                     imagesList.clear()
                     searchQuery = query
@@ -78,27 +82,15 @@ class SearchFragment : Fragment() {
             val api = RepoApp.from(context as Context).getApi()
             val body = api.requestImages(searchQuery, page).execute().body()?.string()
             val htmlDoc = Jsoup.parse(body)
-            val table = htmlDoc.select("table")[4]
-            val rows = table.select("tr")
-            for (i in 0 until rows.size) {
-                val row = rows[i]
-                val cols = row.select("td")
-                for (j in 0 until cols.size) {
-                    val item = cols[j]
-                    val siteUrl = HttpUrl
-                        .parse("https://google.com" + item.select("a").attr("href"))
-                        ?.queryParameter("q").toString()
-                    var imgUrl = item.select("img").attr("src")
-                    if(imgUrl.length > 10) {
-                        if(imgUrl[4] != 's')
-                            imgUrl = "https" + imgUrl.substring(4)
-                    } else
-                        Log.d(TAG, "wrong url")
-                    val descr = item.select("font").text()
-                    imagesList.add(Image(imgUrl, descr, siteUrl))
-                }
+            val jsonImages = htmlDoc.select("div.rg_meta.notranslate")
+            for (i in 0 until jsonImages.size) {
+                val jsonImage = JSONObject(jsonImages[i].ownText())
+                val imgUrl = jsonImage.getString("ou")
+                val descr = jsonImage.getString("pt")
+                val siteUrl = jsonImage.getString("ru")
+                imagesList.add(Image(imgUrl, descr, siteUrl))
             }
-            page += 20
+            page += 100
             GlobalScope.launch(Dispatchers.Main) {
                 listAdapter.notifyDataSetChanged()
             }
@@ -121,7 +113,8 @@ class SearchFragment : Fragment() {
 
         override fun onBindViewHolder(holder: ImagesListViewHolder, position: Int) {
             holder.bind(imagesList[position])
-            if(position == imagesList.size/2) {
+            Log.d(TAG, position.toString())
+            if (position == imagesList.size / 2) {
                 GlobalScope.launch {
                     getImages()
                 }
