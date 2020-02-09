@@ -1,4 +1,4 @@
-package com.wnp.imagesearch
+package com.wnp.imagesearch.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
+import com.wnp.imagesearch.MainActivity
+import com.wnp.imagesearch.R
 
 class MainFragment : Fragment() {
     override fun onCreateView(

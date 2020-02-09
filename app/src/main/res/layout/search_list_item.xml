@@ -2,7 +2,7 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="6dp"
+    android:layout_margin="12dp"
     android:minHeight="80dp"
     android:orientation="vertical">
 
@@ -16,7 +16,7 @@
             android:layout_height="wrap_content">
 
             <ImageView
-                android:id="@+id/seatch_item_image"
+                android:id="@+id/search_item_image"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/image"
@@ -47,12 +47,21 @@
             android:adjustViewBounds="true"
             android:textSize="14sp" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/related_images"
+            android:id="@+id/related_image_label"
+            android:visibility="gone"
+            android:textSize="14sp" />
+
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/search_item_related_list"
+            android:id="@+id/related_images_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="horizontal"
-            android:visibility="gone" />
+            android:layout_marginTop="6dp"
+            android:visibility="gone"
+            android:orientation="horizontal" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

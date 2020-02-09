@@ -1,12 +1,9 @@
 package com.wnp.imagesearch
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.Menu
-import androidx.appcompat.widget.SearchView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
-import kotlinx.android.synthetic.main.activity_main.view.*
+import com.wnp.imagesearch.fragments.MainFragment
 
 class MainActivity : AppCompatActivity() {
 

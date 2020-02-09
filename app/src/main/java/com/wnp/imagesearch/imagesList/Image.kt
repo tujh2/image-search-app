@@ -1,6 +1,7 @@
-package com.wnp.imagesearch
+package com.wnp.imagesearch.imagesList
 
 import android.net.Uri
+
 
 class Image(
     val imageUrl: String,
