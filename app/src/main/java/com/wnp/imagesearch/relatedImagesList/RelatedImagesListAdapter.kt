@@ -31,6 +31,7 @@ class RelatedImagesListAdapter : RecyclerView.Adapter<RelatedImagesViewHolder>()
     override fun getItemCount(): Int = relatedImagesList.size
 
     fun loadRelatedImages(siteUrl: String): LiveData<Progress> {
+        state.value = Progress.IN_PROGRESS
         getRelatedImages(siteUrl)
         return state
     }
@@ -40,27 +41,23 @@ class RelatedImagesListAdapter : RecyclerView.Adapter<RelatedImagesViewHolder>()
             try {
                 relatedImagesList.clear()
                 val connection = Jsoup.connect(siteUrl)
-                if(connection.response().statusCode() == 200) {
-                    val htmlDoc = connection.get()
-                    val relatedImages = htmlDoc.select("img")
-                    for (i in 0 until relatedImages.size) {
-                        val img = relatedImages[i].attr("src")
-                        if (img.isNotEmpty()) {
-                            if (img[0] == '/' && img[1] == '/') {
-                                relatedImagesList.add("http:$img")
-                            } else if (img[0] == '/')
-                                relatedImagesList.add(htmlDoc.baseUri() + img)
-                            else
-                                relatedImagesList.add(img)
-                        }
+                val htmlDoc = connection.get()
+                val relatedImages = htmlDoc.select("img")
+                for (i in 0 until relatedImages.size) {
+                    val img = relatedImages[i].attr("src")
+                    if (img.isNotEmpty()) {
+                        if (img[0] == '/' && img[1] == '/') {
+                            relatedImagesList.add("http:$img")
+                        } else if (img[0] == '/')
+                            relatedImagesList.add(htmlDoc.baseUri() + img)
+                        else
+                            relatedImagesList.add(img)
                     }
+                }
 
-                    GlobalScope.launch(Dispatchers.Main) {
-                        state.value = Progress.SUCESS
-                        notifyDataSetChanged()
-                    }
-                } else {
-                    state.value = Progress.FAILED
+                GlobalScope.launch(Dispatchers.Main) {
+                    state.value = Progress.SUCCESS
+                    notifyDataSetChanged()
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -69,7 +66,8 @@ class RelatedImagesListAdapter : RecyclerView.Adapter<RelatedImagesViewHolder>()
     }
 
     enum class Progress {
-        SUCESS,
+        SUCCESS,
+        IN_PROGRESS,
         FAILED
     }
 }

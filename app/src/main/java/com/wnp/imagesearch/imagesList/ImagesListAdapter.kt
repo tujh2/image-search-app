@@ -20,7 +20,7 @@ import org.json.JSONObject
 import org.jsoup.Jsoup
 import java.io.IOException
 
-class ImagesListAdapter : RecyclerView.Adapter<ImagesListViewHolder>() {
+class ImagesListAdapter: RecyclerView.Adapter<ImagesListViewHolder>() {
     private val TAG = "Images List Adapter"
     private val imagesList = mutableListOf<Image>()
     private val api = RepoApp.getApi()

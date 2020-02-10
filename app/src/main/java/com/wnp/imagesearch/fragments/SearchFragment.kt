@@ -17,7 +17,7 @@ import java.util.*
 
 class SearchFragment : Fragment() {
     private val TAG = "SearchFragment"
-    private val listAdapter= ImagesListAdapter()
+    private val listAdapter = ImagesListAdapter()
     private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
 
