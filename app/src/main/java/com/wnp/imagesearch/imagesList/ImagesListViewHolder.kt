@@ -1,6 +1,5 @@
 package com.wnp.imagesearch.imagesList
 
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -26,24 +25,20 @@ class ImagesListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val relatedImagesView: LinearLayout = itemView.findViewById(R.id.related_view)
 
 
-    fun bind(image: Image) {
+    fun bind(image: Image, screenWidth: Int) {
         relatedRecyclerView.apply {
             layoutManager =
                 LinearLayoutManager(itemView.context, RecyclerView.HORIZONTAL, false)
             adapter = image.relatedImagesListAdapter
         }
-        //Log.d(TAG, image.imageURL)
-        itemView.post {
-            //itemView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
-            imageView.layoutParams.height = itemView.width * image.height / image.width
-            GlideApp.with(itemView.context)
-                .load(image.imageUrl)
-                .thumbnail(Glide.with(imageView.context).load(image.thumbnailUrl))
-                .into(imageView)
-            this.siteUrl.text = image.siteUrl
-            this.descr.text = image.description
-            setRelatedVisibility(image.isRelatedOpened)
-        }
+        setRelatedVisibility(image.isRelatedOpened)
+        imageView.layoutParams.height = screenWidth * image.height / image.width
+        GlideApp.with(itemView.context)
+            .load(image.imageUrl)
+            .thumbnail(Glide.with(imageView.context).load(image.thumbnailUrl))
+            .into(imageView)
+        this.siteUrl.text = image.siteUrl
+        this.descr.text = image.description
     }
 
     private fun setRelatedVisibility(visible: Boolean) {
@@ -55,7 +50,10 @@ class ImagesListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
 
     fun openRelated(image: Image) {
-        if (!image.isRelatedOpened) {
+        if (image.isRelatedOpened) {
+            image.isRelatedOpened = false
+            setRelatedVisibility(false)
+        } else {
             relatedRecyclerView.adapter = null
             val relatedImagesAdapter = RelatedImagesListAdapter()
             relatedProgressBar.visibility = View.VISIBLE
@@ -65,21 +63,19 @@ class ImagesListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                     Observer<RelatedImagesListAdapter.Progress> {
                         when (it) {
                             RelatedImagesListAdapter.Progress.SUCCESS -> {
-                                Log.d(TAG, "SUCCESS")
                                 relatedProgressBar.visibility = View.GONE
                                 image.relatedImagesListAdapter = relatedImagesAdapter
                             }
                             RelatedImagesListAdapter.Progress.IN_PROGRESS -> {
                                 setRelatedVisibility(true)
-                                Log.d(TAG, "IN_PROGRESS")
                                 relatedProgressBar.visibility = View.VISIBLE
                                 image.isRelatedOpened = true
                             }
                             RelatedImagesListAdapter.Progress.FAILED -> {
                                 relatedProgressBar.visibility = View.GONE
-                                Log.d(TAG, "FAILED")
                                 image.isRelatedOpened = false
                             }
+                            null -> {}
                         }
                     })
         }

@@ -1,9 +1,8 @@
 package com.wnp.imagesearch.fragments
 
-import android.app.Activity
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.view.*
-import android.view.inputmethod.InputMethodManager
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
@@ -13,16 +12,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.wnp.imagesearch.R
 import com.wnp.imagesearch.imagesList.ImagesListAdapter
-import java.util.*
 
 class SearchFragment : Fragment() {
     private val TAG = "SearchFragment"
     private val listAdapter = ImagesListAdapter()
     private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
+    private lateinit var searchView: SearchView
+    private var searchQuery: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
         retainInstance = true
     }
 
@@ -36,36 +37,56 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setHasOptionsMenu(true)
         recyclerView = view.findViewById(R.id.images_list_main)
+        progressBar = view.findViewById(R.id.progress_images_load)
         recyclerView.layoutManager = LinearLayoutManager(this.context)
         recyclerView.adapter = listAdapter
-        progressBar = view.findViewById(R.id.progress_images_load)
+        val displayMetrics = DisplayMetrics()
+        activity?.windowManager?.defaultDisplay?.getMetrics(displayMetrics)
+        listAdapter.setScreenWidth(displayMetrics.widthPixels)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.search_menu, menu)
-        val searchView = menu.findItem(R.id.search_field)?.actionView as SearchView
-        searchView.setIconifiedByDefault(false)
+        searchView = menu.findItem(R.id.search_field)?.actionView as SearchView
         searchView.maxWidth = Int.MAX_VALUE
+        if (searchQuery.isNotEmpty()) {
+            searchView.setIconifiedByDefault(false)
+            searchView.setQuery(searchQuery, false)
+        } else {
+            searchView.isIconified = false
+        }
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
-                return true
+                return false
             }
 
             override fun onQueryTextSubmit(query: String?): Boolean {
                 if (query != null && query.isNotEmpty()) {
+                    searchQuery = query
                     progressBar.visibility = View.VISIBLE
                     listAdapter.loadImages(query)
                         .observe(viewLifecycleOwner, Observer<ImagesListAdapter.Progress> {
-                                state ->
-                            if (state == ImagesListAdapter.Progress.SUCCESS)
+                            when (it) {
+                                ImagesListAdapter.Progress.IN_PROGRESS -> {
+                                    progressBar.visibility = View.VISIBLE
+                                    searchView.clearFocus()
+                                }
+                                ImagesListAdapter.Progress.SUCCESS -> {
                                     progressBar.visibility = View.GONE
-                            else
-                                Toast.makeText(context,
-                                    "Failed to load images",
-                                    Toast.LENGTH_LONG).show()
+                                }
+                                ImagesListAdapter.Progress.FAILED -> {
+                                    progressBar.visibility = View.GONE
+                                    Toast.makeText(
+                                        context,
+                                        "Connection error, try again",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                                null -> {
+                                }
+                            }
                         })
                 }
                 return when (query != null && query.isNotEmpty()) {
@@ -74,8 +95,5 @@ class SearchFragment : Fragment() {
                 }
             }
         })
-        searchView.requestFocus()
-        val imm = context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
     }
 }
