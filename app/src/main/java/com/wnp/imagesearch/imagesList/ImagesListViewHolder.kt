@@ -1,11 +1,16 @@
 package com.wnp.imagesearch.imagesList
 
 import android.graphics.drawable.Drawable
+import android.icu.util.ValueIterator
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -16,47 +21,33 @@ import com.bumptech.glide.request.target.Target
 import com.wnp.imagesearch.GlideApp
 import com.wnp.imagesearch.R
 import com.wnp.imagesearch.relatedImagesList.RelatedImagesListAdapter
+import com.wnp.imagesearch.relatedImagesList.RelatedImagesViewHolder
 
 class ImagesListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val TAG = "Image View Holder"
     private val imageView: ImageView = itemView.findViewById(R.id.search_item_image)
     private val siteUrl: TextView = itemView.findViewById(R.id.search_item_link)
     private val descr: TextView = itemView.findViewById(R.id.search_item_description)
-    private val progressBar: ProgressBar = itemView.findViewById(R.id.search_item_progress)
-    private val relatedRecyclerView: RecyclerView = itemView.findViewById(R.id.related_images_list)
-    private val relatedImagesLabel: TextView = itemView.findViewById(R.id.related_image_label)
-    private var isRelatedOpened = false
+    private val relatedProgressBar: ProgressBar =
+        itemView.findViewById(R.id.related_image_progressbar)
+    private var relatedRecyclerView: RecyclerView = itemView.findViewById(R.id.related_images_list)
+    private val relatedImagesView: LinearLayout = itemView.findViewById(R.id.related_view)
+
+
 
     fun bind(image: Image) {
+        relatedRecyclerView.apply {
+            layoutManager =
+                LinearLayoutManager(itemView.context, RecyclerView.HORIZONTAL, false)
+            adapter = image.relatedImagesListAdapter
+        }
         //Log.d(TAG, image.imageURL)
+        setRelatedVisibility(image.isRelatedOpened)
         itemView.post {
             imageView.layoutParams.height = itemView.width * image.height / image.width
             GlideApp.with(itemView.context)
                 .load(image.imageUrl)
                 .thumbnail(Glide.with(imageView.context).load(image.thumbnailUrl))
-                .listener(object : RequestListener<Drawable> {
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable>?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        Log.d(TAG, "Error loading image")
-                        return false
-                    }
-
-                    override fun onResourceReady(
-                        resource: Drawable?,
-                        model: Any?,
-                        target: Target<Drawable>?,
-                        dataSource: DataSource?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        progressBar.visibility = View.GONE
-                        return false
-                    }
-                })
-                .override(itemView.width, itemView.width * image.height / image.width)
                 .into(imageView)
             this.siteUrl.text = image.siteUrl
             this.descr.text = image.description
@@ -64,22 +55,30 @@ class ImagesListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     }
 
-    fun openRelated(siteUrl: String) {
-        if(isRelatedOpened) {
-            relatedImagesLabel.visibility = View.GONE
-            relatedRecyclerView.visibility = View.GONE
-            relatedRecyclerView.adapter = null
-            relatedRecyclerView.layoutManager = null
-            isRelatedOpened = false
+    private fun setRelatedVisibility(visibile: Boolean) {
+        if (visibile) {
+            relatedImagesView.visibility = View.VISIBLE
         } else {
-            val relatedImagesAdapter = RelatedImagesListAdapter()
-            relatedImagesAdapter.getRelatedImages(siteUrl)
-            relatedImagesLabel.visibility = View.VISIBLE
-            relatedRecyclerView.visibility = View.VISIBLE
-            relatedRecyclerView.adapter = relatedImagesAdapter
-            relatedRecyclerView.layoutManager =
-                LinearLayoutManager(itemView.context, RecyclerView.HORIZONTAL, false)
-            isRelatedOpened = true
+            relatedImagesView.visibility = View.GONE
         }
+    }
+
+    fun openRelated(image: Image) {
+        if (!image.isRelatedOpened) {
+            relatedRecyclerView.adapter = null
+            val relatedImagesAdapter = RelatedImagesListAdapter()
+            relatedProgressBar.visibility = View.VISIBLE
+            relatedRecyclerView.adapter = relatedImagesAdapter
+            relatedImagesAdapter.loadRelatedImages(image.siteUrl)
+                .observe(itemView.context as LifecycleOwner,
+                    Observer<RelatedImagesListAdapter.Progress> { state ->
+                        if (state == RelatedImagesListAdapter.Progress.SUCESS) {
+                            relatedProgressBar.visibility = View.GONE
+                            image.isRelatedOpened = true
+                            image.relatedImagesListAdapter = relatedImagesAdapter
+                        }
+                    })
+        }
+        setRelatedVisibility(!image.isRelatedOpened)
     }
 }

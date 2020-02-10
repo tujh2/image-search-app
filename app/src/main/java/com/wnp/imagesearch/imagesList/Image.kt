@@ -1,7 +1,6 @@
 package com.wnp.imagesearch.imagesList
 
-import android.net.Uri
-
+import com.wnp.imagesearch.relatedImagesList.RelatedImagesListAdapter
 
 class Image(
     val imageUrl: String,
@@ -10,4 +9,7 @@ class Image(
     val thumbnailUrl: String,
     val width: Int,
     val height: Int
-)
+) {
+    var isRelatedOpened = false
+    var relatedImagesListAdapter: RelatedImagesListAdapter? = null
+}

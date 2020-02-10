@@ -1,8 +1,9 @@
 package com.wnp.imagesearch.relatedImagesList
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.wnp.imagesearch.R
 import kotlinx.coroutines.Dispatchers
@@ -13,6 +14,7 @@ import java.io.IOException
 
 class RelatedImagesListAdapter : RecyclerView.Adapter<RelatedImagesViewHolder>() {
     private val relatedImagesList = mutableListOf<String>()
+    private val state = MutableLiveData<Progress>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RelatedImagesViewHolder {
         val view = LayoutInflater
@@ -28,29 +30,46 @@ class RelatedImagesListAdapter : RecyclerView.Adapter<RelatedImagesViewHolder>()
 
     override fun getItemCount(): Int = relatedImagesList.size
 
-    fun getRelatedImages(siteUrl: String) {
+    fun loadRelatedImages(siteUrl: String): LiveData<Progress> {
+        getRelatedImages(siteUrl)
+        return state
+    }
+
+    private fun getRelatedImages(siteUrl: String) {
         GlobalScope.launch {
             try {
                 relatedImagesList.clear()
-                val htmlDoc = Jsoup.connect(siteUrl).get()
-                val relatedImages = htmlDoc.select("img")
-                for (i in 0 until relatedImages.size) {
-                    val img = relatedImages[i].attr("src")
-                    if (img.isNotEmpty()) {
-                        if (img[0] == '/' && img[1] == '/') {
-                            relatedImagesList.add("http:$img")
-                        } else if (img[0] == '/')
-                            relatedImagesList.add(htmlDoc.baseUri() + img)
-                        else
-                            relatedImagesList.add(img)
+                val connection = Jsoup.connect(siteUrl)
+                if(connection.response().statusCode() == 200) {
+                    val htmlDoc = connection.get()
+                    val relatedImages = htmlDoc.select("img")
+                    for (i in 0 until relatedImages.size) {
+                        val img = relatedImages[i].attr("src")
+                        if (img.isNotEmpty()) {
+                            if (img[0] == '/' && img[1] == '/') {
+                                relatedImagesList.add("http:$img")
+                            } else if (img[0] == '/')
+                                relatedImagesList.add(htmlDoc.baseUri() + img)
+                            else
+                                relatedImagesList.add(img)
+                        }
                     }
-                }
-                GlobalScope.launch(Dispatchers.Main) {
-                    notifyDataSetChanged()
+
+                    GlobalScope.launch(Dispatchers.Main) {
+                        state.value = Progress.SUCESS
+                        notifyDataSetChanged()
+                    }
+                } else {
+                    state.value = Progress.FAILED
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
             }
         }
+    }
+
+    enum class Progress {
+        SUCESS,
+        FAILED
     }
 }

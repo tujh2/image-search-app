@@ -3,10 +3,14 @@ package com.wnp.imagesearch.imagesList
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.wnp.imagesearch.GlideApp
 import com.wnp.imagesearch.R
 import com.wnp.imagesearch.RepoApp
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +34,8 @@ class ImagesListAdapter : RecyclerView.Adapter<ImagesListViewHolder>() {
             .inflate(R.layout.search_list_item, parent, false)
         val holder = ImagesListViewHolder(view)
         holder.itemView.setOnClickListener {
-            holder.openRelated(imagesList[holder.adapterPosition].siteUrl)
+            val pos = holder.adapterPosition
+            holder.openRelated(imagesList[pos])
         }
         return holder
     }
@@ -44,6 +49,8 @@ class ImagesListAdapter : RecyclerView.Adapter<ImagesListViewHolder>() {
     }
 
     override fun getItemCount(): Int = imagesList.size
+
+
 
     fun loadImages(query: String): LiveData<Progress> {
         page = 0

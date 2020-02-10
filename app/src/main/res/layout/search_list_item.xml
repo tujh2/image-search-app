@@ -11,25 +11,12 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <ImageView
-                android:id="@+id/search_item_image"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/image"
-                android:scaleType="fitXY" />
-
-            <ProgressBar
-                android:id="@+id/search_item_progress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:visibility="visible" />
-
-        </RelativeLayout>
+        <ImageView
+            android:id="@+id/search_item_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/image"
+            android:scaleType="fitXY" />
 
         <TextView
             android:id="@+id/search_item_link"
@@ -47,21 +34,33 @@
             android:adjustViewBounds="true"
             android:textSize="14sp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="@string/related_images"
-            android:id="@+id/related_image_label"
-            android:visibility="gone"
-            android:textSize="14sp" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/related_images_list"
+        <LinearLayout
+            android:id="@+id/related_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:visibility="gone"
-            android:orientation="horizontal" />
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="24dp"
+                android:text="@string/related_images"
+                android:textSize="14sp" />
+
+            <ProgressBar
+                android:id="@+id/related_image_progressbar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/related_images_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal" />
+        </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
