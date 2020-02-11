@@ -14,13 +14,14 @@ import com.wnp.imagesearch.GlideApp
 import com.wnp.imagesearch.R
 import com.wnp.imagesearch.relatedImagesList.RelatedImagesListAdapter
 
+
 class ImagesListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    private val TAG = "Image View Holder"
     private val imageView: ImageView = itemView.findViewById(R.id.search_item_image)
     private val siteUrl: TextView = itemView.findViewById(R.id.search_item_link)
     private val descr: TextView = itemView.findViewById(R.id.search_item_description)
     private val relatedProgressBar: ProgressBar =
         itemView.findViewById(R.id.related_image_progressbar)
+    private val noRelatedFouundLabel: TextView = itemView.findViewById(R.id.no_related_label)
     private var relatedRecyclerView: RecyclerView = itemView.findViewById(R.id.related_images_list)
     private val relatedImagesView: LinearLayout = itemView.findViewById(R.id.related_view)
 
@@ -69,15 +70,27 @@ class ImagesListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                             RelatedImagesListAdapter.Progress.IN_PROGRESS -> {
                                 setRelatedVisibility(true)
                                 relatedProgressBar.visibility = View.VISIBLE
+                                noRelatedFouundLabel.visibility = View.GONE
                                 image.isRelatedOpened = true
                             }
                             RelatedImagesListAdapter.Progress.FAILED -> {
                                 relatedProgressBar.visibility = View.GONE
+                                noRelatedFouundLabel.visibility = View.VISIBLE
                                 image.isRelatedOpened = false
                             }
-                            null -> {}
+                            RelatedImagesListAdapter.Progress.NO_RELATED_FOUND -> {
+                                noRelatedFouundLabel.visibility = View.VISIBLE
+                                image.isRelatedOpened = true
+                                relatedProgressBar.visibility = View.GONE
+                            }
+                            null -> {
+                            }
                         }
                     })
         }
+    }
+
+    companion object {
+        private const val TAG = "Image View Holder"
     }
 }

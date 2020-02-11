@@ -18,8 +18,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+
 class ImagesListAdapter: RecyclerView.Adapter<ImagesListViewHolder>() {
-    private val TAG = "Images List Adapter"
     private val imagesList = mutableListOf<Image>()
     private val api = RepoApp.getApi()
     private var page = 0
@@ -92,12 +92,12 @@ class ImagesListAdapter: RecyclerView.Adapter<ImagesListViewHolder>() {
                                     height
                                 )
                             )
+                            GlobalScope.launch(Dispatchers.Main){
+                                state.value = Progress.SUCCESS
+                                notifyItemInserted(imagesList.size - 1)
+                            }
                         }
-                        GlobalScope.launch(Dispatchers.Main){
-                            page += 20
-                            state.value = Progress.SUCCESS
-                            notifyDataSetChanged()
-                        }
+                        page += 20
                     }
                 } else {
                     state.value = Progress.FAILED
@@ -110,5 +110,9 @@ class ImagesListAdapter: RecyclerView.Adapter<ImagesListViewHolder>() {
         SUCCESS,
         IN_PROGRESS,
         FAILED
+    }
+
+    companion object {
+        private const val TAG = "Images List Adapter"
     }
 }

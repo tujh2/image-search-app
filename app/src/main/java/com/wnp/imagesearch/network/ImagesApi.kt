@@ -8,6 +8,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
+import retrofit2.http.Url
 
 class ImagesApi {
     private val api: GetImages
@@ -28,5 +29,8 @@ class ImagesApi {
     interface GetImages {
         @GET("/search?tbm=isch&async=_fmt:pc&asearch=ichunk")
         fun requestImages(@Query("q") query: String, @Query("start") page: Int): Call<ResponseBody>
+
+        @GET
+        fun requestByUrl(@Url url: String) : Call<ResponseBody>
     }
 }

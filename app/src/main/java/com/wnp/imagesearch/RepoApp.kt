@@ -5,9 +5,9 @@ import android.content.Context
 import com.wnp.imagesearch.network.ImagesApi
 
 open class RepoApp : Application() {
-    //private lateinit var api: ImagesApi.GetImages
-
     companion object {
+        private lateinit var app: Application
+
         fun from(context: Context): RepoApp {
             return context.applicationContext as RepoApp
         }
@@ -15,10 +15,15 @@ open class RepoApp : Application() {
         fun getApi(): ImagesApi.GetImages {
             return api
         }
+
+        fun gerAppContext() : Context{
+            return app.applicationContext
+        }
     }
 
     override fun onCreate() {
         super.onCreate()
+        app = this
         api = ImagesApi().getApi()
     }
 }

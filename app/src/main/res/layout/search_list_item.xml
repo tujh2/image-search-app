@@ -14,8 +14,8 @@
         <ImageView
             android:id="@+id/search_item_image"
             android:layout_width="match_parent"
-            android:adjustViewBounds="true"
             android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
             android:contentDescription="@string/image"
             android:scaleType="fitXY" />
 
@@ -48,6 +48,14 @@
                 android:layout_marginTop="24dp"
                 android:text="@string/related_images"
                 android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/no_related_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:textSize="14sp"
+                android:text="@string/no_related_founded" />
 
             <ProgressBar
                 android:id="@+id/related_image_progressbar"
